@@ -8,7 +8,9 @@ type Properties map[string]interface{}
 // MustBool guarantees the return of a `bool` (with optional default).
 // This function useful when you explicitly want a `bool` in a single
 // value return context, for example:
-//     myFunc(f.Properties.MustBool("param1"), f.Properties.MustBool("optional_param", true))
+//
+//	myFunc(f.Properties.MustBool("param1"), f.Properties.MustBool("optional_param", true))
+//
 // This function will panic if the value is present but not a bool.
 func (p Properties) MustBool(key string, def ...bool) bool {
 	v := p[key]
@@ -30,7 +32,9 @@ func (p Properties) MustBool(key string, def ...bool) bool {
 // MustInt guarantees the return of an `int` (with optional default).
 // This function useful when you explicitly want a `int` in a single
 // value return context, for example:
-//     myFunc(f.Properties.MustInt("param1"), f.Properties.MustInt("optional_param", 123))
+//
+//	myFunc(f.Properties.MustInt("param1"), f.Properties.MustInt("optional_param", 123))
+//
 // This function will panic if the value is present but not a number.
 func (p Properties) MustInt(key string, def ...int) int {
 	v := p[key]
@@ -56,7 +60,9 @@ func (p Properties) MustInt(key string, def ...int) int {
 // MustFloat64 guarantees the return of a `float64` (with optional default)
 // This function useful when you explicitly want a `float64` in a single
 // value return context, for example:
-//     myFunc(f.Properties.MustFloat64("param1"), f.Properties.MustFloat64("optional_param", 10.1))
+//
+//	myFunc(f.Properties.MustFloat64("param1"), f.Properties.MustFloat64("optional_param", 10.1))
+//
 // This function will panic if the value is present but not a number.
 func (p Properties) MustFloat64(key string, def ...float64) float64 {
 	v := p[key]
@@ -82,7 +88,9 @@ func (p Properties) MustFloat64(key string, def ...float64) float64 {
 // MustString guarantees the return of a `string` (with optional default)
 // This function useful when you explicitly want a `string` in a single
 // value return context, for example:
-//     myFunc(f.Properties.MustString("param1"), f.Properties.MustString("optional_param", "default"))
+//
+//	myFunc(f.Properties.MustString("param1"), f.Properties.MustString("optional_param", "default"))
+//
 // This function will panic if the value is present but not a string.
 func (p Properties) MustString(key string, def ...string) string {
 	v := p[key]
@@ -101,6 +109,23 @@ func (p Properties) MustString(key string, def ...string) string {
 	panic("property not found")
 }
 
+// CoordinateProperties guarantees the return of an allocated CoordinateProperties in this properties.
+//
+// If there is no CoordinateProperties in the properties, it will create one and
+// return it. If there is something invalid under the key "coordinateProperties"
+// it will overwrite it with a new CoordinateProperties.
+func (p Properties) CoordinateProperties() CoordinateProperties {
+	v := p["coordinateProperties"]
+
+	if m, ok := v.(map[string]interface{}); ok {
+		return m
+	}
+
+	m := make(map[string]interface{})
+	p["coordinateProperties"] = m
+	return m
+}
+
 // Clone returns a shallow copy of the properties.
 func (p Properties) Clone() Properties {
 	n := make(Properties, len(p)+3)
@@ -110,3 +135,9 @@ func (p Properties) Clone() Properties {
 
 	return n
 }
+
+// CoordinateProperties is a GeoJSON extension proposal that adds an encoding for
+// time, heart rate, and other per-point data along a LineString geometry.
+//
+// See <https://github.com/mapbox/geojson-coordinate-properties>
+type CoordinateProperties map[string]interface{}

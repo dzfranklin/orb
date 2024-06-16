@@ -119,15 +119,62 @@ func TestPropertiesMustString(t *testing.T) {
 func TestPropertiesClone(t *testing.T) {
 	props := Properties{
 		"one": 2,
+		"coordinateProperties": CoordinateProperties{
+			"one": 2,
+		},
 	}
 
 	clone := props.Clone()
-	if clone["one"] != 2 {
+	if clone["one"] != 2 || clone.CoordinateProperties()["one"] != 2 {
 		t.Errorf("should clone properties")
 	}
 
 	clone["one"] = 3
+	clone.CoordinateProperties()["one"] = 3
 	if props["one"] != 2 {
 		t.Errorf("should clone properties")
+	}
+	if props.CoordinateProperties()["one"] != 2 {
+		t.Errorf("should clone coordinate properties")
+	}
+}
+
+func TestUndefinedCoordinateProperties(t *testing.T) {
+	props := Properties{}
+
+	coordProps := props.CoordinateProperties()
+	if coordProps == nil {
+		t.Errorf("CoordinateProperties should not be nil")
+	}
+
+	v := []int{1, 2, 3}
+	coordProps["times"] = v
+
+	if props.CoordinateProperties()["times"] == nil {
+		t.Errorf("CoordinateProperties should be shared")
+	}
+}
+
+func TestDefinedCoordinateProperties(t *testing.T) {
+	f, err := UnmarshalFeature([]byte(`{
+		"type":"Feature",
+		"properties":{
+			"coordinateProperties":{
+				"times":["2024-06-12T09:03:59Z","2024-06-12T09:04:00Z","2024-06-12T09:04:06Z"]
+			}
+		},
+		"geometry":{
+			"type":"LineString",
+			"coordinates":[[-4.00387147,56.70437094,207],[-4.00383705,56.70436426,208],[-4.00371947,56.70432306,209]]
+		}
+	}`))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	coordProps := f.Properties.CoordinateProperties()
+
+	if len(coordProps["times"].([]interface{})) != 3 {
+		t.Errorf("missing property")
 	}
 }
